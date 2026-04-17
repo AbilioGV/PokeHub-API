@@ -8,4 +8,7 @@ public class HuntResponse
     public int Attempts { get; set; }
     public string Status { get; set; }
     public string Sprite { get; set; }
+    public TimeSpan TotalTime { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
 }
