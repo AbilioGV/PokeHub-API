@@ -1,4 +1,10 @@
 # 🚀 PokeHub API
+![.NET](https://img.shields.io/badge/.NET-8.0-purple)
+![ASP.NET Core](https://img.shields.io/badge/ASP.NET-Core-blue)
+![Entity Framework](https://img.shields.io/badge/EF-Core-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 API desenvolvida em **.NET 8** para gerenciamento de hunts de Pokémon, com integração à PokeAPI para validação e enriquecimento de dados.
 
