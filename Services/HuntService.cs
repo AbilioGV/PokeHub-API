@@ -1,18 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PokeHub.API.Data;
+﻿using PokeHub.API.Data;
 using PokeHub.API.DTOs;
 using PokeHub.API.Models;
+using PokeHub.API.Repositories;
 
 namespace PokeHub.API.Services;
 
 public class HuntService
 {
-    private readonly AppDbContext _context;
+    private readonly IHuntRepository _huntRepository;
     private readonly PokemonService _pokemonService;
 
-    public HuntService(AppDbContext context, PokemonService pokemonService)
+    public HuntService(IHuntRepository huntRepository, PokemonService pokemonService)
     {
-        _context = context;
+        _huntRepository = huntRepository;
         _pokemonService = pokemonService;
     }
 
@@ -26,7 +26,7 @@ public class HuntService
         }
 
         // 2. Valida se a Hunt já existe no banco de dados
-        var huntExists = await _context.Hunts.AnyAsync(h => h.PokemonName.ToLower() == hunt.PokemonName.ToLower() && h.Status.ToLower() == "active");
+        var huntExists = await _huntRepository.HasActiveHuntAsync(hunt.PokemonName);
         if (huntExists)
         {
             hunt.Status = "active";
@@ -40,15 +40,14 @@ public class HuntService
         hunt.LastActiveDate = DateTime.UtcNow;
         hunt.AccumulatedTime = TimeSpan.Zero;
 
-        _context.Hunts.Add(hunt);
-        await _context.SaveChangesAsync();
+        await _huntRepository.AddAsync(hunt);
 
         return hunt;
     }
 
     public async Task<IEnumerable<HuntResponse>> GetAllHuntsAsync()
     {
-        var hunts = await _context.Hunts.ToListAsync();
+        var hunts = await _huntRepository.GetAllAsync();
 
         var huntsWithSpritesTasks = hunts.Select(async hunt =>
         {
@@ -74,7 +73,7 @@ public class HuntService
 
     public async Task<Hunt?> IncrementAttempts(int Id)
     {
-        var hunt = await _context.Hunts.FirstOrDefaultAsync(h => h.Id == Id);
+        var hunt = await _huntRepository.GetByIdAsync(Id);
         if (hunt == null)
             return null;
 
@@ -85,14 +84,14 @@ public class HuntService
 
         hunt.Attempts++;
 
-        await _context.SaveChangesAsync();
+        await _huntRepository.UpdateAsync(hunt);
 
         return hunt;
     }
 
     public async Task<Hunt?> StatusHunt(int Id, string status)
     {
-        var hunt = await _context.Hunts.FirstOrDefaultAsync(h => h.Id == Id);
+        var hunt = await _huntRepository.GetByIdAsync(Id);
         if (hunt == null)
             return null;
 
@@ -123,14 +122,14 @@ public class HuntService
         }
 
         hunt.Status = newStatus;
-        await _context.SaveChangesAsync();
+        await _huntRepository.UpdateAsync(hunt);
 
         return hunt;
     }
 
     public async Task<IEnumerable<HuntResponse>> GetByStatusAsync(string status)
     {
-        var hunts = await _context.Hunts.Where(h => h.Status.ToLower() == status.ToLower()).ToListAsync();
+        var hunts = await _huntRepository.GetByStatusAsync(status);
 
         var huntsWithSpritesTasks = hunts.Select(async hunt =>
         {
@@ -156,7 +155,7 @@ public class HuntService
 
     public async Task<HuntResponse?> GetHuntByIdAsync(int Id)
     {
-        var hunt = await _context.Hunts.FirstOrDefaultAsync(h => h.Id == Id);
+        var hunt = await _huntRepository.GetByIdAsync(Id);
         if (hunt == null)
             return null;
 
@@ -179,12 +178,11 @@ public class HuntService
 
     public async Task<bool> DeleteHuntAsync(int Id)
     {
-        var hunt = await _context.Hunts.FirstOrDefaultAsync(h => h.Id == Id);
+        var hunt = await _huntRepository.GetByIdAsync(Id);
         if (hunt == null)
             return false;
 
-        _context.Hunts.Remove(hunt);
-        await _context.SaveChangesAsync();
+        await _huntRepository.DeleteAsync(hunt);
         return true;
     }
 }

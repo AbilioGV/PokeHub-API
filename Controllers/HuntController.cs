@@ -17,7 +17,7 @@ public class HuntController : ControllerBase
         _huntService = huntService;
         _pokeService = pokeService;
     }
-    [HttpGet]
+    [HttpGet("", Name = "GetAllHunts")]
     public async Task<IActionResult> GetAll()
     {
         var huntsWithSprites = await _huntService.GetAllHuntsAsync();
@@ -52,7 +52,7 @@ public class HuntController : ControllerBase
         return Ok(hunts);
     }
 
-    [HttpPost]
+    [HttpPost("", Name = "CreateHunt")]
     public async Task<IActionResult> Create(Hunt hunt)
     {
         try
